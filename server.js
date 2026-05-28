@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import nodemailer from "nodemailer";
+import axios from "axios";
 
 dotenv.config();
 
@@ -46,32 +46,6 @@ app.get("/", (req, res) => {
 });
 
 // ----------------------
-// Email Transporter
-// ----------------------
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-
-  auth: {
-    user: process.env.BREVO_EMAIL,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
-
-// ----------------------
-// TEST EMAIL CONNECTION
-// ----------------------
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("EMAIL ERROR:");
-    console.log(error);
-  } else {
-    console.log("Email server is ready");
-  }
-});
-
-// ----------------------
 // CONTACT ROUTE
 // ----------------------
 app.post("/contact", async (req, res) => {
@@ -81,7 +55,9 @@ app.post("/contact", async (req, res) => {
 
     const { name, email, subject, message } = req.body;
 
+    // ----------------------
     // Save to MongoDB
+    // ----------------------
     const newMessage = new Message({
       name,
       email,
@@ -93,14 +69,26 @@ app.post("/contact", async (req, res) => {
 
     console.log("Saved to MongoDB");
 
-    // Send Email
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
+    // ----------------------
+    // Send Email using Brevo API
+    // ----------------------
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "Portfolio",
+          email: process.env.BREVO_EMAIL,
+        },
 
-      subject: `New Portfolio Message from ${name}`,
+        to: [
+          {
+            email: process.env.BREVO_EMAIL,
+          },
+        ],
 
-      text: `
+        subject: `New Portfolio Message from ${name}`,
+
+        textContent: `
 Name: ${name}
 
 Email: ${email}
@@ -109,11 +97,18 @@ Subject: ${subject}
 
 Message:
 ${message}
-      `,
-    });
+        `,
+      },
+      {
+        headers: {
+          accept: "application/json",
+          "api-key": process.env.BREVO_API_KEY,
+          "content-type": "application/json",
+        },
+      }
+    );
 
     console.log("EMAIL SENT SUCCESSFULLY");
-    console.log(info.response);
 
     res.status(200).json({
       success: true,
