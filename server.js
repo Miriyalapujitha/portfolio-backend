@@ -4,7 +4,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 
-
 dotenv.config();
 
 const app = express();
@@ -40,26 +39,38 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model("Message", messageSchema);
 
 // ----------------------
+// HOME ROUTE
+// ----------------------
+app.get("/", (req, res) => {
+  res.send("Backend Running Successfully");
+});
+
+// ----------------------
 // Email Transporter
 // ----------------------
-
-
-// ----------------------
-// TEST EMAIL CONNECTION
-// ----------------------
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+});
 
-  family: 4,
+// ----------------------
+// TEST EMAIL CONNECTION
+// ----------------------
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("EMAIL ERROR:");
+    console.log(error);
+  } else {
+    console.log("Email server is ready");
+  }
 });
-app.get("/", (req, res) => {
-  res.send("Backend Running Successfully");
-});
+
 // ----------------------
 // CONTACT ROUTE
 // ----------------------
@@ -83,14 +94,13 @@ app.post("/contact", async (req, res) => {
     console.log("Saved to MongoDB");
 
     // Send Email
-    try {
-      const info = await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
 
-        subject: `New Portfolio Message from ${name}`,
+      subject: `New Portfolio Message from ${name}`,
 
-        text: `
+      text: `
 Name: ${name}
 
 Email: ${email}
@@ -99,21 +109,11 @@ Subject: ${subject}
 
 Message:
 ${message}
-        `,
-      });
+      `,
+    });
 
-      console.log("EMAIL SENT SUCCESSFULLY");
-      console.log(info.response);
-
-    } catch (emailError) {
-  console.log("EMAIL SEND ERROR:");
-  console.log(emailError);
-
-  return res.status(500).json({
-    success: false,
-    message: "Email failed",
-  });
-}
+    console.log("EMAIL SENT SUCCESSFULLY");
+    console.log(info.response);
 
     res.status(200).json({
       success: true,
