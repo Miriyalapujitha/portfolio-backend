@@ -55,13 +55,13 @@ const transporter = nodemailer.createTransport({
 // ----------------------
 // TEST EMAIL CONNECTION
 // ----------------------
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("EMAIL ERROR:");
-    console.log(error);
-  } else {
-    console.log("Email server is ready");
-  }
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  connectionTimeout: 10000,
 });
 
 // ----------------------
@@ -117,9 +117,14 @@ ${message}
       console.log(info.response);
 
     } catch (emailError) {
-      console.log("EMAIL SEND ERROR:");
-      console.log(emailError);
-    }
+  console.log("EMAIL SEND ERROR:");
+  console.log(emailError);
+
+  return res.status(500).json({
+    success: false,
+    message: "Email failed",
+  });
+}
 
     res.status(200).json({
       success: true,
