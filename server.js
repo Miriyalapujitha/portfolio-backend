@@ -48,21 +48,14 @@ const Message = mongoose.model("Message", messageSchema);
 // TEST EMAIL CONNECTION
 // ----------------------
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 
-  requireTLS: true,
-
-  tls: {
-    family: 4,
-    rejectUnauthorized: false,
-  },
+  family: 4,
 });
 app.get("/", (req, res) => {
   res.send("Backend Running Successfully");
