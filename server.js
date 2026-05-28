@@ -47,21 +47,15 @@ const Message = mongoose.model("Message", messageSchema);
 // ----------------------
 const transporter = nodemailer.createTransport({
   service: "gmail",
-
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-
-  pool: true,
-  maxConnections: 1,
-  rateDelta: 20000,
-  rateLimit: 5,
-
-  socketTimeout: 30000,
-  connectionTimeout: 30000,
+  tls: {
+    rejectUnauthorized: false,
+  },
+  connectionTimeout: 10000,
 });
-
 // ----------------------
 // CONTACT ROUTE
 // ----------------------
