@@ -64,6 +64,9 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 });
+app.get("/", (req, res) => {
+  res.send("Backend Running Successfully");
+});
 // ----------------------
 // CONTACT ROUTE
 // ----------------------
