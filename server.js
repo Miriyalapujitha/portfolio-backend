@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import dns from "dns";
 
 dotenv.config();
 
@@ -42,19 +43,27 @@ const Message = mongoose.model("Message", messageSchema);
 // Email Transporter
 // ----------------------
 
+dns.setDefaultResultOrder("ipv4first");
 // ----------------------
 // TEST EMAIL CONNECTION
 // ----------------------
 const transporter = nodemailer.createTransport({
   service: "gmail",
+
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
   tls: {
     rejectUnauthorized: false,
   },
-  connectionTimeout: 10000,
+
+  connectionTimeout: 20000,
+  greetingTimeout: 20000,
+  socketTimeout: 20000,
+
+  family: 4,
 });
 // ----------------------
 // CONTACT ROUTE
