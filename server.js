@@ -39,10 +39,6 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model("Message", messageSchema);
 
 // ----------------------
-// CHECK ENV
-// ----------------------
-
-// ----------------------
 // Email Transporter
 // ----------------------
 const transporter = nodemailer.createTransport({
@@ -98,13 +94,14 @@ app.post("/contact", async (req, res) => {
     console.log("Saved to MongoDB");
 
     // Send Email
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
+    try {
+      const info = await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER,
 
-      subject: `New Portfolio Message from ${name}`,
+        subject: `New Portfolio Message from ${name}`,
 
-      text: `
+        text: `
 Name: ${name}
 
 Email: ${email}
@@ -113,11 +110,16 @@ Subject: ${subject}
 
 Message:
 ${message}
-      `,
-    });
+        `,
+      });
 
-    console.log("EMAIL SENT SUCCESSFULLY");
-    console.log(info.response);
+      console.log("EMAIL SENT SUCCESSFULLY");
+      console.log(info.response);
+
+    } catch (emailError) {
+      console.log("EMAIL SEND ERROR:");
+      console.log(emailError);
+    }
 
     res.status(200).json({
       success: true,
