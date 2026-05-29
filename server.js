@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import axios from "axios";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -70,25 +70,21 @@ app.post("/contact", async (req, res) => {
     console.log("Saved to MongoDB");
 
     // ----------------------
-    // Send Email using Brevo API
+    // EMAIL using Nodemailer (SMTP Gmail)
     // ----------------------
-    await axios.post(
-      "https://api.brevo.com/v3/smtp/email",
-      {
-        sender: {
-          name: "Portfolio",
-          email: process.env.BREVO_EMAIL,
-        },
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-        to: [
-          {
-            email: process.env.BREVO_EMAIL,
-          },
-        ],
-
-        subject: `New Portfolio Message from ${name}`,
-
-        textContent: `
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: process.env.EMAIL,
+      subject: `New Portfolio Message from ${name}`,
+      text: `
 Name: ${name}
 
 Email: ${email}
@@ -97,16 +93,8 @@ Subject: ${subject}
 
 Message:
 ${message}
-        `,
-      },
-      {
-        headers: {
-          accept: "application/json",
-          "api-key": process.env.BREVO_API_KEY,
-          "content-type": "application/json",
-        },
-      }
-    );
+      `,
+    });
 
     console.log("EMAIL SENT SUCCESSFULLY");
 
