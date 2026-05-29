@@ -73,12 +73,14 @@ app.post("/contact", async (req, res) => {
     // EMAIL using Nodemailer (SMTP Gmail)
     // ----------------------
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // IMPORTANT: false for 587
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
     await transporter.sendMail({
       from: process.env.EMAIL,
